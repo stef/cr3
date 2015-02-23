@@ -33,10 +33,10 @@ depends: openssl seccomp
 Install: `make install`
 
 create keys using openssl:
-`openssl genrsa -out my.key 4096`
-`openssl rsa -in my.key -pubout >> my.pub`
-`cat my.key my.pub >>my.pem`
-`srm -fll my.key`
+# openssl genrsa -out my.key 4096
+# openssl rsa -in my.key -pubout >> my.pub
+# cat my.key my.pub >>my.pem
+# srm -fll my.key
 
 deploy my.pub on the encrypting host, secure my.pem in a safe
 location for decryption.
