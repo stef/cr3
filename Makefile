@@ -38,4 +38,4 @@ test: cod
 	@echo
 	@rm -rf $(tmpdir)
 
-.PHONY: clean all
+.PHONY: clean all install test
