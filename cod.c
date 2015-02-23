@@ -95,7 +95,7 @@ void encrypt(void* pem) {
     exit(1);
   }
 
-  // seed keccak with the message key
+  // seed sponge with the message key
   loadkey(&ctx, mkey);
 
   max = ctx.rbytes - 1;
@@ -148,6 +148,7 @@ void decrypt(void* pem) {
 
   // load encrypted message key from stdin and decrypt
   if(read(0, &cmkey_len, 2)!=2 ||
+     cmkey_len > 1024 ||
      read(0, &cmkey, cmkey_len)!=cmkey_len) {
     fprintf(stderr, "corrupted file\n");
     exit(1);
