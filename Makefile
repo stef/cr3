@@ -15,6 +15,7 @@ clean:
 	rm -rf cod *.o
 
 install: cod
+	strip -s cod
 	cp cod /usr/bin/cod
 
 test: cod
