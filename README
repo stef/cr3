@@ -1,0 +1,56 @@
+cod
+
+implements simple pipe using rsa and keccak-based spongewrap
+authenticated encryption
+
+(C) 2015 by Stefan Marsiske, <s@ctrlc.hu>, GPLv3
+
+useful at least in the following use-case: you have some receiving
+device on which plaintext data arrives, which you want to encrypt
+before it is forwarded in a hostile environment to the final recipient
+holding a private key in a safe location. In this one-way setting the
+recipient is never talking to the host doing the encryption. The main
+threat this tool counters is the seizure of the data after reception
+on the receiving device until safe delivery to the final destination.
+
+Example: take photos in a hostile situation, encrypt the the photos
+and being unable to recover them until arrival in the save location
+with the the private key. (note, this does not protect against
+forensics!)
+
+crypto: a random 32 byte message key is encrypted with the public
+key of the recipient in oaep padded RSA, then this message key is
+fed into SpongeWrap, which is then used to authenticated encrypt the
+message.
+
+output format:
+   2  bytes - the length of the RSA encrypted message key
+   n  bytes - the RSA encrypted message key
+   m  bytes - the encrypted message
+   16 bytes - the "MAC"
+
+depends: openssl seccomp
+Install: `make install`
+
+create keys using openssl:
+`openssl genrsa -out my.key 4096`
+`openssl rsa -in my.key -pubout >> my.pub`
+`cat my.key my.pub >>my.pem`
+`srm -fll my.key`
+
+deploy my.pub on the encrypting host, secure my.pem in a safe
+location for decryption.
+
+test with:
+
+# for i in {0..42} {8170..8210} 1000000; do
+#     echo -ne "\r$i   "
+#     dd if=/dev/zero bs=$i count=1 2>/dev/null |
+#          ./cod e my.pub |
+#          ./cod d my.pem >/dev/null ||
+#          break
+# done
+
+or test with:
+
+# ./cod e mx.pub <cod.c | ./cod d mx.pem | md5sum; md5sum cod.c
