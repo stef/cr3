@@ -35,10 +35,8 @@ Install: `make install`
 create keys using openssl:
 # openssl genrsa -out my.key 4096
 # openssl rsa -in my.key -pubout >> my.pub
-# cat my.key my.pub >>my.pem
-# srm -fll my.key
 
-deploy my.pub on the encrypting host, secure my.pem in a safe
+deploy my.pub on the encrypting host, secure my.key in a safe
 location for decryption.
 
 test with:
@@ -47,10 +45,10 @@ test with:
 #     echo -ne "\r$i   "
 #     dd if=/dev/zero bs=$i count=1 2>/dev/null |
 #          ./cod e my.pub |
-#          ./cod d my.pem >/dev/null ||
+#          ./cod d my.key >/dev/null ||
 #          break
 # done
 
 or test with:
 
-# ./cod e mx.pub <cod.c | ./cod d mx.pem | md5sum; md5sum cod.c
+# ./cod e mx.pub <cod.c | ./cod d mx.key | md5sum; md5sum cod.c
