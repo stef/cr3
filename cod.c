@@ -89,11 +89,11 @@ void encrypt(void* pem) {
   BIO_free(keybio);
 
   // write out message key
-  if(fwrite(&cmkey_len, 2, 1, stdout)!=2) {
+  if(fwrite(&cmkey_len, 2, 1, stdout)!=1) {
     fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
     exit(1);
   }
-  if(fwrite(cmkey, cmkey_len, 1, stdout)!=cmkey_len) {
+  if(fwrite(cmkey, cmkey_len, 1, stdout)!=1) {
     fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
     exit(1);
   }
@@ -120,7 +120,7 @@ void encrypt(void* pem) {
       }
       keccak_encrypt(&ctx, dst+i, buf+i, (size-i>avail)?avail:size-i);
     }
-    if(fwrite(dst, size, 1, stdout)!=size) {
+    if(fwrite(dst, size, 1, stdout)!=1) {
       fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
       exit(1);
     }
@@ -129,7 +129,7 @@ void encrypt(void* pem) {
   // calculate tag and output
   keccak_pad(&ctx, &_PAD_PLAINSTREAM, 1);
   keccak_squeeze(&ctx, tag, TAGLEN);
-  if(fwrite(tag, TAGLEN, 1, stdout)!=TAGLEN) {
+  if(fwrite(tag, TAGLEN, 1, stdout)!=1) {
       fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
       exit(1);
   }
@@ -204,7 +204,7 @@ void decrypt(void* pem) {
       }
       keccak_decrypt(&ctx, dst+i, buf+i, ((size-TAGLEN)-i>avail)?avail:(size-TAGLEN)-i);
     }
-    if(fwrite(dst, size-TAGLEN, 1, stdout)!=(size-TAGLEN)) {
+    if(fwrite(dst, size-TAGLEN, 1, stdout)!=1) {
       fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
       exit(1);
     }
