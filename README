@@ -12,6 +12,7 @@ holding a private key in a safe location. In this one-way setting the
 recipient is never talking to the host doing the encryption. The main
 threat this tool counters is the seizure of the data after reception
 on the receiving device until safe delivery to the final destination.
+Combine it in-depth with other defenses.
 
 Example: take photos in a hostile situation, encrypt the the photos
 and being unable to recover them until arrival in the save location
