@@ -89,8 +89,14 @@ void encrypt(void* pem) {
   BIO_free(keybio);
 
   // write out message key
-  fwrite(&cmkey_len, 2, 1, stdout);
-  fwrite(cmkey, cmkey_len, 1, stdout);
+  if(fwrite(&cmkey_len, 2, 1, stdout)!=2) {
+    fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
+    exit(1);
+  }
+  if(fwrite(cmkey, cmkey_len, 1, stdout)!=cmkey_len) {
+    fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
+    exit(1);
+  }
 
   if (mlock(&ctx, sizeof(ctx)) < 0) {
     fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
