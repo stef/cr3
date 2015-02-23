@@ -68,8 +68,10 @@ void encrypt(void* pem) {
     exit(1);
   }
 
-  if (mlock(mkey, KEYLEN) < 0)
+  if (mlock(mkey, KEYLEN) < 0) {
     fprintf(stderr,"error locking mkey into memory: %s", strerror(errno));
+    exit(1);
+  }
 
   // Generate and encrypt message key
   if(RAND_bytes(mkey, KEYLEN) != 1) {
@@ -154,8 +156,10 @@ void decrypt(void* pem) {
     exit(1);
   }
 
-  if (mlock(mkey, KEYLEN) < 0)
+  if (mlock(mkey, KEYLEN) < 0) {
     fprintf(stderr,"error locking mkey into memory: %s", strerror(errno));
+    exit(1);
+  }
 
   if(RSA_private_decrypt(cmkey_len,cmkey,mkey,rsa,RSA_PKCS1_OAEP_PADDING) == -1) {
     printLastError("Public Encrypt failed ");
