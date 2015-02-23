@@ -24,15 +24,13 @@ test: cod
 	@mkdir -p $(tmpdir)
 	@openssl genrsa -out $(tmpdir)/my.key 4096 2>/dev/null
 	@openssl rsa -in $(tmpdir)/my.key -pubout >> $(tmpdir)/my.pub 2>/dev/null
-	@cat $(tmpdir)/my.key $(tmpdir)/my.pub >>$(tmpdir)/my.pem
-	@rm $(tmpdir)/my.key
-	./cod e $(tmpdir)/my.pub <cod.c | ./cod d $(tmpdir)/my.pem | md5sum
+	./cod e $(tmpdir)/my.pub <cod.c | ./cod d $(tmpdir)/my.key | md5sum
 	md5sum cod.c
 	for i in {0..42} {8170..8210} 1000000; do \
 	    echo -ne "\r$$i      "; \
 	    dd if=/dev/zero bs=$$i count=1 2>/dev/null | \
 	         ./cod e $(tmpdir)/my.pub | \
-	         ./cod d $(tmpdir)/my.pem >/dev/null || \
+	         ./cod d $(tmpdir)/my.key >/dev/null || \
 				{ echo "test failed"; break; } \
 	done
 	@echo
