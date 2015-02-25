@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 #include "keccak.h"
 #include "utils.h"
-#include <errno.h>
 #include <sys/mman.h>
 
 #define TAGLEN 16
