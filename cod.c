@@ -191,11 +191,7 @@ int decrypt(void* pem, u8* password) {
   }
 
   if(RSA_private_decrypt(cmkey_len,cmkey,mkey,rsa,RSA_PKCS1_OAEP_PADDING) == -1) {
-    printLastError("Public Encrypt failed ");
-    RSA_free(rsa);
-    BIO_free(keybio);
     clear(mkey, KEYLEN);
-    return 1;
   }
 
   // forget RSA key
