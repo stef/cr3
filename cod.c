@@ -287,17 +287,6 @@ int main(const int argc, const char** argv) {
   }
 
   // open key file, leave the reading/parsing after the sandboxing
-  struct stat st;
-  if(stat(argv[2], &st)==-1) {
-    fprintf(stderr, "couldn't stat %s (%s)\n", argv[2], strerror(errno));
-    if(password) clear(password, pw_len);
-    exit(1);
-  }
-  if(st.st_size>1024*16) { // 16K secret key pem is a recklessly generous limit
-    fprintf(stderr, "%s too big - are you sure this is a rsa key?\n", argv[2]);
-    if(password) clear(password, pw_len);
-    exit(1);
-  }
   int keyfd;
   if((keyfd=open(argv[2],O_RDONLY))==-1) {
     fprintf(stderr, "couldn't open %s (%s)\n", argv[2], strerror(errno));
@@ -315,6 +304,17 @@ int main(const int argc, const char** argv) {
   if(password) OpenSSL_add_all_algorithms();
 
   // load the key into memory
+  struct stat st;
+  if(fstat(keyfd, &st)==-1) {
+    fprintf(stderr, "couldn't stat %s (%s)\n", argv[2], strerror(errno));
+    if(password) clear(password, pw_len);
+    exit(1);
+  }
+  if(st.st_size>1024*16) { // 16K secret key pem is a recklessly generous limit
+    fprintf(stderr, "%s too big - are you sure this is a rsa key?\n", argv[2]);
+    if(password) clear(password, pw_len);
+    exit(1);
+  }
   char *key;
   if((key=malloc(st.st_size))==NULL) {
     fprintf(stderr, "couldn't malloc %ld bytes for key.\n", st.st_size);
