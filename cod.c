@@ -261,7 +261,7 @@ void usage(void) {
 
 int main(const int argc, const char** argv) {
   u8* password = NULL; // for encrypted RSA keys
-  int pw_len = 0;
+  unsigned int pw_len = 0;
 
   // handling this 1st in case the key is valid, we want to protect it.
   if(argc==4 && argv[1][0]=='d') {
