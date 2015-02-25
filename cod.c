@@ -47,7 +47,7 @@ int encrypt(void* pem) {
   RSA *rsa= NULL;
   BIO *keybio ;
   char unsigned mkey[KEYLEN];
-  unsigned char cmkey[4098]={};
+  unsigned char cmkey[4098];
   int cmkey_len;
   struct KeccakContext ctx;
   int max, i, avail;
@@ -151,9 +151,9 @@ int encrypt(void* pem) {
 
 int decrypt(void* pem) {
   RSA *rsa= NULL;
-  BIO *keybio ;
+  BIO *keybio;
   unsigned char mkey[260];
-  unsigned char cmkey[4098]={};
+  unsigned char cmkey[4098];
   int cmkey_len = 0;
   struct KeccakContext ctx;
   int max, i, avail, ret;
