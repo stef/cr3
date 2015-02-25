@@ -44,7 +44,7 @@ void loadkey(struct KeccakContext *ctx, unsigned char *mkey) {
   clear(mkey, KEYLEN);
 }
 
-void encrypt(void* pem) {
+int encrypt(void* pem) {
   RSA *rsa= NULL;
   BIO *keybio ;
   char unsigned mkey[KEYLEN];
@@ -60,28 +60,36 @@ void encrypt(void* pem) {
   keybio = BIO_new_mem_buf(pem, -1);
   if (keybio==NULL) {
     printLastError("Failed to create key bio ");
-    exit(1);
+    return 1;
   }
   rsa = PEM_read_bio_RSA_PUBKEY(keybio, &rsa,NULL, NULL);
   if(rsa == NULL) {
     printLastError("Failed to load RSA public key ");
-    exit(1);
+    BIO_free(keybio);
+    return 1;
   }
 
   if (mlock(mkey, KEYLEN) < 0) {
     fprintf(stderr,"error locking mkey into memory: %s", strerror(errno));
-    exit(1);
+    RSA_free(rsa);
+    BIO_free(keybio);
+    return 1;
   }
 
   // Generate and encrypt message key
   if(RAND_bytes(mkey, KEYLEN) != 1) {
     printLastError("Failed to get random ");
-    exit(1);
+    RSA_free(rsa);
+    BIO_free(keybio);
+    return 1;
   }
 
   if((cmkey_len = RSA_public_encrypt(KEYLEN,mkey,cmkey,rsa,RSA_PKCS1_OAEP_PADDING)) == -1) {
     printLastError("Public Encrypt failed ");
-    exit(1);
+    RSA_free(rsa);
+    BIO_free(keybio);
+    clear(mkey, KEYLEN);
+    return 1;
   }
 
   // throw away RSA key
@@ -91,16 +99,19 @@ void encrypt(void* pem) {
   // write out message key
   if(fwrite(&cmkey_len, 2, 1, stdout)!=1) {
     fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-    exit(1);
+    clear(mkey, KEYLEN);
+    return 1;
   }
   if(fwrite(cmkey, cmkey_len, 1, stdout)!=1) {
     fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-    exit(1);
+    clear(mkey, KEYLEN);
+    return 1;
   }
 
   if (mlock(&ctx, sizeof(ctx)) < 0) {
     fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
-    exit(1);
+    clear(mkey, KEYLEN);
+    return 1;
   }
 
   // seed sponge with the message key
@@ -122,7 +133,8 @@ void encrypt(void* pem) {
     }
     if(fwrite(dst, size, 1, stdout)!=1) {
       fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-      exit(1);
+      keccak_forget(&ctx);
+      return 1;
     }
     size=read(0, buf, BUFSIZE);
   }
@@ -131,12 +143,14 @@ void encrypt(void* pem) {
   keccak_squeeze(&ctx, tag, TAGLEN);
   if(fwrite(tag, TAGLEN, 1, stdout)!=1) {
       fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-      exit(1);
+      keccak_forget(&ctx);
+      return 1;
   }
   keccak_forget(&ctx);
+  return 0;
 }
 
-void decrypt(void* pem) {
+int decrypt(void* pem) {
   RSA *rsa= NULL;
   BIO *keybio ;
   unsigned char mkey[260];
@@ -152,12 +166,13 @@ void decrypt(void* pem) {
   keybio = BIO_new_mem_buf(pem, -1);
   if (keybio==NULL) {
     printLastError("Failed to create key bio ");
-    exit(1);
+    return 1;
   }
   rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa,NULL, NULL);
   if(rsa == NULL) {
     printLastError("Failed to load RSA private key ");
-    exit(1);
+    BIO_free(keybio);
+    return 1;
   }
 
   // load encrypted message key from stdin and decrypt
@@ -165,17 +180,24 @@ void decrypt(void* pem) {
      cmkey_len > 1024 ||
      read(0, &cmkey, cmkey_len)!=cmkey_len) {
     fprintf(stderr, "corrupted file\n");
-    exit(1);
+    RSA_free(rsa);
+    BIO_free(keybio);
+    return 1;
   }
 
   if (mlock(mkey, KEYLEN) < 0) {
     fprintf(stderr,"error locking mkey into memory: %s", strerror(errno));
-    exit(1);
+    RSA_free(rsa);
+    BIO_free(keybio);
+    return 1;
   }
 
   if(RSA_private_decrypt(cmkey_len,cmkey,mkey,rsa,RSA_PKCS1_OAEP_PADDING) == -1) {
     printLastError("Public Encrypt failed ");
-    exit(1);
+    RSA_free(rsa);
+    BIO_free(keybio);
+    clear(mkey, KEYLEN);
+    return 1;
   }
 
   // forget RSA key
@@ -184,7 +206,8 @@ void decrypt(void* pem) {
 
   if (mlock(&ctx, sizeof(ctx)) < 0) {
     fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
-    exit(1);
+    clear(mkey, KEYLEN);
+    return 1;
   }
 
   // seed sponge with message key
@@ -206,7 +229,8 @@ void decrypt(void* pem) {
     }
     if(fwrite(dst, size-TAGLEN, 1, stdout)!=1) {
       fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-      exit(1);
+      keccak_forget(&ctx);
+      return 1;
     }
     // move last 16 to the beginning of buf
     memcpy(buf, buf+(size-TAGLEN), TAGLEN);
@@ -225,8 +249,9 @@ void decrypt(void* pem) {
   // calculated tag
   if(cmp(tag, buf, TAGLEN)!=0) {
     fprintf(stderr,"failed to decrypt\n");
-    exit(1);
+    return 1;
   }
+  return 0;
 }
 
 void usage(void) {
@@ -277,11 +302,12 @@ int main(const int argc, const char** argv) {
   }
   close(keyfd);
 
+  ret=1;
   // decide what to do and act on it
   if(argv[1][0]=='e') {
-    encrypt(key);
+    ret = encrypt(key);
   } else if(argv[1][0]=='d') {
-    decrypt(key);
+    ret = decrypt(key);
   } else {
     usage();
   }
@@ -289,5 +315,5 @@ int main(const int argc, const char** argv) {
   // clear rsa key from mem
   clear(key, st.st_size);
 
-  return 0;
+  return ret;
 }
