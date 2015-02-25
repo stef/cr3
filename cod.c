@@ -23,10 +23,9 @@ char _PAD_KEYSTREAM   = 3;
 char _PAD_PLAINSTREAM = 2;
 
 void printLastError(char *msg) {
-  char err[1024];
-  ERR_load_crypto_strings();
-  ERR_error_string(ERR_get_error(), err);
-  printf("%s ERROR: %s\n",msg, err);
+  char *err;
+  err = ERR_error_string(ERR_get_error(), NULL);
+  printf("%s ERROR: %s\n", msg, err);
 }
 
 void loadkey(struct KeccakContext *ctx, unsigned char *mkey) {
@@ -284,6 +283,8 @@ int main(const int argc, const char** argv) {
   // sandbox
   // most importantly this sandboxes the parsing of the RSA keys
   lock_seccomp();
+
+  ERR_load_crypto_strings();
 
   // load the key into memory
   char *key;
