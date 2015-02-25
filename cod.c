@@ -152,7 +152,7 @@ int encrypt(void* pem) {
 int decrypt(void* pem) {
   RSA *rsa= NULL;
   BIO *keybio;
-  unsigned char mkey[260];
+  unsigned char mkey[1024];
   unsigned char cmkey[4098];
   int cmkey_len = 0;
   struct KeccakContext ctx;
@@ -178,7 +178,7 @@ int decrypt(void* pem) {
   if(read(0, &cmkey_len, 2)!=2 ||
      cmkey_len > 1024 ||
      read(0, &cmkey, cmkey_len)!=cmkey_len) {
-    fprintf(stderr, "corrupted file\n");
+    fprintf(stderr, "corrupt input\n");
     RSA_free(rsa);
     BIO_free(keybio);
     return 1;
