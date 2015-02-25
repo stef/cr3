@@ -14,10 +14,12 @@ threat this tool counters is the seizure of the data after reception
 on the receiving device until safe delivery to the final destination.
 Combine it in-depth with other defenses.
 
-Example: take photos in a hostile situation, encrypt the the photos
-and being unable to recover them until arrival in the save location
-with the the private key. (note, this does not protect against
-forensics!)
+Example: take photos in a hostile environment, encrypt the the photos
+and be unable to recover them until arrival in the save location with
+the the private key. (note, this does not protect against forensic
+attacks against the storage device - maybe copying the encrypted and
+destroying the original device with plaintext residue is the only and
+expensive way)
 
 crypto: a random 32 byte message key is encrypted with the public
 key of the recipient in oaep padded RSA, then this message key is
@@ -53,3 +55,13 @@ test with:
 or test with:
 
 # ./cod e mx.pub <cod.c | ./cod d mx.key | md5sum; md5sum cod.c
+
+if the secret key is encrypted, then supply the password as a param to
+the decrypt operation:
+
+# ./cod e mx.pub <cod.c | ./cod d mx.key "mysecretpassword" | md5sum; md5sum cod.c
+
+if you supply a password, cod removes it from the command line
+parameters, so it can't be seen by doing a `ps(1)`, however you should
+make sure that 1/ you have no shell history or 2/ you have it well
+protected.
