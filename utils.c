@@ -31,6 +31,7 @@ int cmp(const void * a, const void *b, const size_t size) {
 }
 
 void lock_seccomp(void) {
+#ifdef __GLIBC__
   //int i;
   scmp_filter_ctx ctx;
   ctx = seccomp_init(SCMP_ACT_KILL); // default action: kill
@@ -55,6 +56,7 @@ void lock_seccomp(void) {
 
   // enable seccomp rules
   seccomp_load(ctx);
+#endif // __GLIBC__
 }
 
 void drop_privs(void) {
