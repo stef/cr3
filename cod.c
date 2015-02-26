@@ -312,10 +312,6 @@ int main(const int argc, const char** argv) {
     unsigned int pw_len = 0;
     if(password!=NULL) {
       pw_len = strlen(password);
-      if(pw_len>512) {
-        fprintf(stderr, "password is a bit too long: (%d)\n", pw_len);
-        exit(1);
-      }
       if (mlock(password, pw_len) < 0) {
         fprintf(stderr,"error locking password into memory: %s", strerror(errno));
         clear((u8*) password, pw_len);
