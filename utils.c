@@ -31,7 +31,6 @@ int cmp(const void * a, const void *b, const size_t size) {
 }
 
 void lock_seccomp(void) {
-#ifdef __GLIBC__
   //int i;
   scmp_filter_ctx ctx;
   ctx = seccomp_init(SCMP_ACT_KILL); // default action: kill
@@ -42,8 +41,14 @@ void lock_seccomp(void) {
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 1, SCMP_A0(SCMP_CMP_EQ, 3));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(close), 1, SCMP_A0(SCMP_CMP_EQ, 3));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(read), 1, SCMP_A0(SCMP_CMP_EQ, 0));
+#ifdef __GLIBC__
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 1, SCMP_A0(SCMP_CMP_EQ, 1));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(write), 1, SCMP_A0(SCMP_CMP_EQ, 2));
+#else // assume musl-libc
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(writev), 1, SCMP_A0(SCMP_CMP_EQ, 1));
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(writev), 1, SCMP_A0(SCMP_CMP_EQ, 2));
+#endif // __GLIBC__
+
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(ioctl), 1, SCMP_A0(SCMP_CMP_EQ, 1));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(time), 1, SCMP_A0(SCMP_CMP_EQ, NULL));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(open), 1, SCMP_A1(SCMP_CMP_EQ, O_RDONLY|O_NOCTTY|O_NONBLOCK));
@@ -63,7 +68,6 @@ void lock_seccomp(void) {
 
   // enable seccomp rules
   seccomp_load(ctx);
-#endif // __GLIBC__
 }
 
 void drop_privs(void) {
