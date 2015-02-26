@@ -13,8 +13,10 @@ void usage(void) {
   fprintf(stderr,"cod usage:`\n");
   fprintf(stderr,"`... | ./cod e pub.pem | ...`        encryption\n");
   fprintf(stderr,"`... | ./cod d privkey.pem | ...`    decryption\n\n");
+#ifndef NOPASSWORD
   fprintf(stderr,"if your private key is encrypted, supply the passphrase in the COD_PASSWORD env variable:\n");
   fprintf(stderr,"`... | COD_PASSWORD='secret' ./cod d privkey.pem | ...`    decryption\n");
+#endif
 }
 
 int main(const int argc, const char** argv) {
@@ -69,6 +71,7 @@ int main(const int argc, const char** argv) {
   if(argv[1][0]=='e') {
     ret = cod_encrypt(key);
   } else if(argv[1][0]=='d') {
+#ifndef NOPASSWORD
     // try reading password for private key from env COD_PASSWORD
     char* password = getenv("COD_PASSWORD");
     unsigned int pw_len = 0;
@@ -84,6 +87,9 @@ int main(const int argc, const char** argv) {
 
     ret = cod_decrypt(key, (u8*) password);
     if(password) clear((u8*) password, pw_len);
+#else // !defined(NOPASSWORD)
+    ret = cod_decrypt(key, NULL);
+#endif
   } else {
     usage();
   }
