@@ -37,7 +37,6 @@ static void loadkey(struct KeccakContext *ctx, unsigned char *mkey) {
     }
     keccak_absorb(ctx, mkey+i, (KEYLEN-i>avail)?avail:KEYLEN-i);
   }
-  clear(mkey, KEYLEN);
 }
 
 int cod_encrypt(void* pem) {
@@ -94,22 +93,20 @@ int cod_encrypt(void* pem) {
 
   // seed sponge with the message key, and discard also mkey
   loadkey(&ctx, mkey);
+  clear(mkey, KEYLEN);
 
   // write out message key
   if(fwrite(&cmkey_len, 2, 1, stdout)!=1) {
     fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-    clear(mkey, KEYLEN);
     return 1;
   }
   if(fwrite(cmkey, cmkey_len, 1, stdout)!=1) {
     fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-    clear(mkey, KEYLEN);
     return 1;
   }
 
   if (mlock(&ctx, sizeof(ctx)) < 0) {
     fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
-    clear(mkey, KEYLEN);
     return 1;
   }
 
@@ -202,10 +199,11 @@ int cod_decrypt(void* pem, u8* password) {
 
   // seed sponge with message key, and discard immediately mkey
   loadkey(&ctx, mkey);
-  max = ctx.rbytes - 1;
+  clear(mkey, KEYLEN);
 
   // decrypt incoming stdin to stdout while always retaining the last
   // 16 bytes to be able to use them to verify the message tag
+  max = ctx.rbytes - 1;
   keccak_pad(&ctx, &_PAD_KEYSTREAM, 1);
   size=read(0, buf, BUFSIZE);
   while(size > TAGLEN) {
