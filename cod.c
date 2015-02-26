@@ -251,8 +251,9 @@ int cod_decrypt(void* pem, u8* password) {
 void usage(void) {
   fprintf(stderr,"cod usage:`\n");
   fprintf(stderr,"`... | ./cod e pub.pem | ...`        encryption\n");
-  fprintf(stderr,"`... | ./cod d privkey.pem | ...`    decryption (plaintext rsa key) or:\n");
-  fprintf(stderr,"`... | ./cod d privkey.pem '(password for encrypted rsa key)' | ...`\n");
+  fprintf(stderr,"`... | ./cod d privkey.pem | ...`    decryption\n\n");
+  fprintf(stderr,"if your private key is encrypted, supply the passphrase in the COD_PASSWORD env variable:\n");
+  fprintf(stderr,"`... | COD_PASSWORD='secret' ./cod d privkey.pem | ...`    decryption\n");
 }
 
 int main(const int argc, const char** argv) {

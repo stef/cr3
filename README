@@ -56,12 +56,10 @@ or test with:
 
 # ./cod e mx.pub <cod.c | ./cod d mx.key | md5sum; md5sum cod.c
 
-if the secret key is encrypted, then supply the password as a param to
-the decrypt operation:
+if the secret key is encrypted, then supply the password as value in
+the COD_PASSWORD environment variable to the decrypt operation:
 
-# ./cod e mx.pub <cod.c | ./cod d mx.key "mysecretpassword" | md5sum; md5sum cod.c
+# ./cod e mx.pub <cod.c | COD_PASSWORD="mysecretpassword" ./cod d mx.key  | md5sum; md5sum cod.c
 
-if you supply a password, cod removes it from the command line
-parameters, so it can't be seen by doing a `ps(1)`, however you should
-make sure that 1/ you have no shell history or 2/ you have it well
-protected.
+if you supply a password, you should make sure that 1/ you have no
+shell history or 2/ you have it well protected.
