@@ -7,9 +7,9 @@
 #include <sys/mman.h>
 #include <string.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 #include "crypto.h"
 #include "keccak.h"
-#include "utils.h"
 #include "crypto.h"
 
 #define TAGLEN 16
@@ -44,7 +44,7 @@ int cod_encrypt(void* pem) {
   BIO *keybio ;
   char unsigned mkey[KEYLEN];
   unsigned char cmkey[4098];
-  int cmkey_len;
+  short cmkey_len;
   struct KeccakContext ctx;
   int max, i, avail;
   unsigned char buf[BUFSIZE], dst[BUFSIZE];
@@ -95,15 +95,10 @@ int cod_encrypt(void* pem) {
   loadkey(&ctx, mkey);
   clear(mkey, KEYLEN);
 
+  short tmp = htons(cmkey_len);
   // write out message key
-  if(fwrite(&cmkey_len, 2, 1, stdout)!=1) {
-    fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-    return 1;
-  }
-  if(fwrite(cmkey, cmkey_len, 1, stdout)!=1) {
-    fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
-    return 1;
-  }
+  if(!_write((u8*) &tmp, 2)) return 1;
+  if(!_write(cmkey, cmkey_len)) return 1;
 
   if (mlock(&ctx, sizeof(ctx)) < 0) {
     fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
@@ -113,7 +108,7 @@ int cod_encrypt(void* pem) {
   // buffered encrypt and output
   max = ctx.rbytes - 1;
   keccak_pad(&ctx, &_PAD_KEYSTREAM, 1);
-  size=read(0, buf, BUFSIZE);
+  size=fread(buf, 1, BUFSIZE, stdin);
   while(size > 0) {
     for(i=0;i<size;i+=avail) {
       avail = max - ctx.pos;
@@ -123,18 +118,16 @@ int cod_encrypt(void* pem) {
       }
       keccak_encrypt(&ctx, dst+i, buf+i, (size-i>avail)?avail:size-i);
     }
-    if(fwrite(dst, size, 1, stdout)!=1) {
-      fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
+    if(!_write(dst, size)) {
       keccak_forget(&ctx);
       return 1;
     }
-    size=read(0, buf, BUFSIZE);
+    size=fread(buf, 1, BUFSIZE, stdin);
   }
   // calculate tag and output
   keccak_pad(&ctx, &_PAD_PLAINSTREAM, 1);
   keccak_squeeze(&ctx, tag, TAGLEN);
-  if(fwrite(tag, TAGLEN, 1, stdout)!=1) {
-      fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
+  if(!_write(tag, TAGLEN)) {
       keccak_forget(&ctx);
       return 1;
   }
@@ -168,9 +161,15 @@ int cod_decrypt(void* pem, u8* password) {
   }
 
   // load encrypted message key from stdin and decrypt
-  if(bufread(0, (u8*) &cmkey_len, 2)!=2 ||
-     cmkey_len > 1024 ||
-     bufread(0, cmkey, cmkey_len)!=cmkey_len) {
+  if(fread((u8*) &cmkey_len, 2, 1, stdin)!=1) {
+    fprintf(stderr, "corrupt input: %d\n", cmkey_len);
+    RSA_free(rsa);
+    BIO_free(keybio);
+    return 1;
+  }
+  cmkey_len=ntohs(cmkey_len);
+  if(cmkey_len > 1024 ||
+     fread(cmkey, cmkey_len, 1, stdin)!=1) {
     fprintf(stderr, "corrupt input\n");
     RSA_free(rsa);
     BIO_free(keybio);
@@ -205,7 +204,7 @@ int cod_decrypt(void* pem, u8* password) {
   // 16 bytes to be able to use them to verify the message tag
   max = ctx.rbytes - 1;
   keccak_pad(&ctx, &_PAD_KEYSTREAM, 1);
-  size=read(0, buf, BUFSIZE);
+  size=fread(buf, 1, BUFSIZE, stdin);
   while(size > TAGLEN) {
     for(i=0;i<size-TAGLEN;i+=((size-TAGLEN)-i>avail)?avail:((size-TAGLEN)-i)) {
       avail = max - ctx.pos;
@@ -215,14 +214,13 @@ int cod_decrypt(void* pem, u8* password) {
       }
       keccak_decrypt(&ctx, dst+i, buf+i, ((size-TAGLEN)-i>avail)?avail:(size-TAGLEN)-i);
     }
-    if(fwrite(dst, size-TAGLEN, 1, stdout)!=1) {
-      fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
+    if(!_write(dst, size-TAGLEN)) {
       keccak_forget(&ctx);
       return 1;
     }
     // move last 16 to the beginning of buf
     memcpy(buf, buf+(size-TAGLEN), TAGLEN);
-    if((ret = read(0, buf+TAGLEN, BUFSIZE-TAGLEN))>0) {
+    if((ret = fread(buf+TAGLEN, 1, BUFSIZE-TAGLEN, stdin))>0) {
       size=TAGLEN+ret;
     } else {
       size=TAGLEN;

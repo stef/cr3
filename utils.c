@@ -9,6 +9,7 @@
 #include <sys/prctl.h> /* prctl */
 #include <sys/stat.h>
 #include <fcntl.h>
+#include "utils.h"
 
 #define USERID 65534
 #define GROUPID 65534
@@ -28,6 +29,14 @@ int cmp(const void * a, const void *b, const size_t size) {
   }
 
   return result; /* returns 0 if equal, nonzero otherwise */
+}
+
+int _write(const u8* src, const size_t len) {
+  if(fwrite(src, len, 1, stdout)!=1) {
+    fprintf(stderr,"failed to write to stdout: %s\n", strerror(errno));
+    return 0;
+  }
+  return 1;
 }
 
 void lock_seccomp(void) {
@@ -55,15 +64,17 @@ void lock_seccomp(void) {
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(brk), 0);
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(exit_group), 0);
 #ifdef __x86_64__
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat), 1, SCMP_A0(SCMP_CMP_EQ, 0));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat), 1, SCMP_A0(SCMP_CMP_EQ, 1));
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat), 1, SCMP_A0(SCMP_CMP_EQ, 3));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mmap), 1, SCMP_A0(SCMP_CMP_EQ, NULL));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getuid), 0);
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat), 1, SCMP_A0(SCMP_CMP_EQ, 3));
 #else // assume 32bit
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat64), 1, SCMP_A0(SCMP_CMP_EQ, 0));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat64), 1, SCMP_A0(SCMP_CMP_EQ, 1));
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat64), 1, SCMP_A0(SCMP_CMP_EQ, 3));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mmap2), 1, SCMP_A0(SCMP_CMP_EQ, NULL));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getuid32), 0);
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat64), 1, SCMP_A0(SCMP_CMP_EQ, 3));
 #endif // __x86_64__
 
   // enable seccomp rules
@@ -92,5 +103,3 @@ void drop_privs(void) {
     exit(1);
   }
 }
-
-int bufread(int fd, unsigned char* buf, size_t size) {int t = 0, n; while((n=read(0, buf+t, size-t))>0) t+=n; return t;}
