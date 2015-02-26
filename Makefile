@@ -1,5 +1,5 @@
 # uncomment if you do not need passwords in private keys
-WITHOUT_PASSWORDS=-DNOPASSWORD
+# WITHOUT_PASSWORDS=-DNOPASSWORD
 
 LDFLAGS = -Wl,--gc-sections -Wl,-z,relro,-PIE -fPIC
 LIBS = -lseccomp -lssl -lcrypto
