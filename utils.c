@@ -88,3 +88,5 @@ void drop_privs(void) {
     exit(1);
   }
 }
+
+int bufread(int fd, unsigned char* buf, size_t size) {int t = 0, n; while((n=read(0, buf+t, size-t))>0) t+=n; return t;}

@@ -176,7 +176,7 @@ int cod_decrypt(void* pem, u8* password) {
   // load encrypted message key from stdin and decrypt
   if(read(0, &cmkey_len, 2)!=2 ||
      cmkey_len > 1024 ||
-     read(0, &cmkey, cmkey_len)!=cmkey_len) {
+     bufread(0, cmkey, cmkey_len)!=cmkey_len) {
     fprintf(stderr, "corrupt input\n");
     RSA_free(rsa);
     BIO_free(keybio);
