@@ -42,7 +42,7 @@ void loadkey(struct KeccakContext *ctx, unsigned char *mkey) {
   clear(mkey, KEYLEN);
 }
 
-int encrypt(void* pem) {
+int cod_encrypt(void* pem) {
   RSA *rsa= NULL;
   BIO *keybio ;
   char unsigned mkey[KEYLEN];
@@ -148,7 +148,7 @@ int encrypt(void* pem) {
   return 0;
 }
 
-int decrypt(void* pem, u8* password) {
+int cod_decrypt(void* pem, u8* password) {
   RSA *rsa= NULL;
   BIO *keybio;
   unsigned char mkey[1024];
@@ -305,7 +305,7 @@ int main(const int argc, const char** argv) {
   ret=1;
   // decide what to do and act on it
   if(argv[1][0]=='e') {
-    ret = encrypt(key);
+    ret = cod_encrypt(key);
   } else if(argv[1][0]=='d') {
     // try reading password for private key from env COD_PASSWORD
     char* password = getenv("COD_PASSWORD");
@@ -324,7 +324,7 @@ int main(const int argc, const char** argv) {
       OpenSSL_add_all_algorithms();
     }
 
-    ret = decrypt(key, (u8*) password);
+    ret = cod_decrypt(key, (u8*) password);
     if(password) clear((u8*) password, pw_len);
   } else {
     usage();
