@@ -29,11 +29,18 @@ message.
 output format:
    2  bytes - the length of the RSA encrypted message key
    n  bytes - the RSA encrypted message key
-   m  bytes - the encrypted message
+   m  bytes - the encrypted message (usually as big as your RSA key)
    16 bytes - the "MAC"
 
+message overhead is 530 bytes with a 4096 RSA key.
+
+Install
 depends: openssl seccomp
-Install: `make install`
+
+If you don't want to support encrypted private keys, set
+WITHOUT_PASSWORDS in the top of the Makefile.
+
+`make install`
 
 create keys using openssl:
 # openssl genrsa -out my.key 4096
@@ -42,7 +49,7 @@ create keys using openssl:
 deploy my.pub on the encrypting host, secure my.key in a safe
 location for decryption.
 
-test with:
+test with: `make test` or something similar:
 
 # for i in {0..42} {8170..8210} 1000000; do
 #     echo -ne "\r$i   "
