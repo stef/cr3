@@ -225,7 +225,7 @@ int cod_decrypt(void* pem, u8* password) {
     if((ret = read(0, buf+TAGLEN, BUFSIZE-TAGLEN))>0) {
       size=TAGLEN+ret;
     } else {
-      size=16;
+      size=TAGLEN;
     }
   }
   // calculate tag
