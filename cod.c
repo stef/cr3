@@ -256,28 +256,7 @@ void usage(void) {
 }
 
 int main(const int argc, const char** argv) {
-  u8* password = NULL; // for encrypted RSA keys
-  unsigned int pw_len = 0;
-
-  // handling this 1st in case the key is valid, we want to protect it.
-  if(argc==4 && argv[1][0]=='d') {
-    // move password from parameters;
-    pw_len = strlen(argv[3]);
-    if(pw_len>512) {
-        fprintf(stderr, "password is a bit too long: (%d)\n", pw_len);
-        exit(1);
-    }
-    password=malloc(pw_len);
-    if (mlock(password, pw_len) < 0) {
-      fprintf(stderr,"error locking password into memory: %s", strerror(errno));
-      clear((u8*) argv[3],pw_len);
-      exit(1);
-    }
-    memcpy(password,argv[3],pw_len);
-    clear((u8*) argv[3],pw_len);
-  }
-
-  if(argc!=3 && argc!=4) {
+  if(argc!=3) {
     usage();
     exit(1);
   }
@@ -286,7 +265,6 @@ int main(const int argc, const char** argv) {
   int keyfd;
   if((keyfd=open(argv[2],O_RDONLY))==-1) {
     fprintf(stderr, "couldn't open %s (%s)\n", argv[2], strerror(errno));
-    if(password) clear(password, pw_len);
     exit(1);
   }
 
@@ -297,35 +275,29 @@ int main(const int argc, const char** argv) {
   lock_seccomp();
 
   ERR_load_crypto_strings();
-  if(password) OpenSSL_add_all_algorithms();
 
   // load the key into memory
   struct stat st;
   if(fstat(keyfd, &st)==-1) {
     fprintf(stderr, "couldn't stat %s (%s)\n", argv[2], strerror(errno));
-    if(password) clear(password, pw_len);
     exit(1);
   }
   if(st.st_size>1024*16) { // 16K secret key pem is a recklessly generous limit
     fprintf(stderr, "%s too big - are you sure this is a rsa key?\n", argv[2]);
-    if(password) clear(password, pw_len);
     exit(1);
   }
   char *key;
   if((key=malloc(st.st_size))==NULL) {
     fprintf(stderr, "couldn't malloc %ld bytes for key.\n", st.st_size);
-    if(password) clear(password, pw_len);
     exit(1);
   }
   if (mlock(key, st.st_size) < 0) {
     fprintf(stderr, "couldn't mlock %ld bytes for key.\n", st.st_size);
-    if(password) clear(password, pw_len);
     exit(1);
   }
   int ret;
   if((ret=read(keyfd, key, st.st_size))!=st.st_size) {
     fprintf(stderr, "couldn't read complete key, only %d bytes read out of %ld.\n", ret, st.st_size);
-    if(password) clear(password, pw_len);
     exit(1);
   }
   close(keyfd);
@@ -335,8 +307,25 @@ int main(const int argc, const char** argv) {
   if(argv[1][0]=='e') {
     ret = encrypt(key);
   } else if(argv[1][0]=='d') {
-    ret = decrypt(key, password);
-    if(password) clear(password, pw_len);
+    // try reading password for private key from env COD_PASSWORD
+    char* password = getenv("COD_PASSWORD");
+    unsigned int pw_len = 0;
+    if(password!=NULL) {
+      pw_len = strlen(password);
+      if(pw_len>512) {
+        fprintf(stderr, "password is a bit too long: (%d)\n", pw_len);
+        exit(1);
+      }
+      if (mlock(password, pw_len) < 0) {
+        fprintf(stderr,"error locking password into memory: %s", strerror(errno));
+        clear((u8*) password, pw_len);
+        exit(1);
+      }
+      OpenSSL_add_all_algorithms();
+    }
+
+    ret = decrypt(key, (u8*) password);
+    if(password) clear((u8*) password, pw_len);
   } else {
     usage();
   }

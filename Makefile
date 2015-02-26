@@ -24,14 +24,14 @@ test: cod
 	@mkdir -p $(tmpdir)
 	@openssl genrsa -aes256 -passout pass:password -out $(tmpdir)/my.key 4096 2>/dev/null
 	@openssl rsa -passin pass:password -in $(tmpdir)/my.key -pubout >> $(tmpdir)/my.pub 2>/dev/null
-	@echo It works | ./cod e $(tmpdir)/my.pub | ./cod d $(tmpdir)/my.key password
-	./cod e $(tmpdir)/my.pub <cod.c | ./cod d $(tmpdir)/my.key password | md5sum
+	@echo It works | ./cod e $(tmpdir)/my.pub | COD_PASSWORD=password ./cod d $(tmpdir)/my.key
+	./cod e $(tmpdir)/my.pub <cod.c | COD_PASSWORD=password ./cod d $(tmpdir)/my.key | md5sum
 	@md5sum cod.c
 	for i in {0..42} {8170..8210} 1000000; do \
 	    echo -ne "\r$$i      "; \
 	    dd if=/dev/zero bs=$$i count=1 2>/dev/null | \
 	         ./cod e $(tmpdir)/my.pub | \
-	         ./cod d $(tmpdir)/my.key password >/dev/null || \
+	         COD_PASSWORD=password ./cod d $(tmpdir)/my.key >/dev/null || \
 				{ echo "test failed"; break; } \
 	done
 	@echo
