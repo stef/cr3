@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "utils.h"
+#include "sandbox.h"
 #include "crypto.h"
 
 void usage(void) {

@@ -9,7 +9,7 @@ CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
 # for debugging
 #CFLAGS = -g -Wall -march=native -Werror -fPIC -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security  $(INCLUDES)
 
-objs = utils.o keccak.o crypto.o
+objs = utils.o keccak.o crypto.o sandbox.o
 
 all : cod
 
