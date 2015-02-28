@@ -1,9 +1,34 @@
-cod
+cr^3 - crazy-crappy-crypto
 
-implements simple pipe using rsa and keccak-based spongewrap
-authenticated encryption
+implements two simple pipes using:
+ - rsa and keccak-based spongewrap authenticated encryption
+ - highly experimental post-quantum signatures based on blake512 and
+   sphincs256
 
-(C) 2015 by Stefan Marsiske, <s@ctrlc.hu>, GPLv3
+(C) 2015 by stf, <s@ctrlc.hu>, GPLv3
+
+why crazy-crappy-crypto? it's crazy because it uses unsanctioned,
+experimental and unconventional crypto implementations, some of which
+are so fresh, that it's not even a month that the paper has last been
+edited on which this is based. None of these tools should not find
+wide adoption within at least the next 10 years. The selection of the
+algorithms is conservative in the way, that besides fresh algos the
+rest is selected either on maturity or has at least been considered in
+a crypto contest in the final round. Crappy is the way some of this is
+implemented, the crypto algorithms are simply ripped out from other
+projects, like the supercop benchmarking suite. Although some have
+been verified to provide the expected test vectors, otherwise not much
+effort has been done to verify the resistance against various attacks
+on any of these implementations. so anyone to use this crap must be
+crazy, hence the name.
+
+WARNING - these tools should only be used by people who want to break
+these tools and publish their results. Any damages, liabilites, etc
+are waived. DO NOT use these for anything else but breaking them. It is
+crazy and irresponsible to use these tools for anything serious. You
+have been warned.
+
+COD - the authenticated encrypted asymmetric pipe.
 
 useful at least in the following use-case: you have some receiving
 device on which plaintext data arrives, which you want to encrypt
@@ -27,7 +52,8 @@ fed into SpongeWrap, which is then used to authenticated encrypt the
 message.
 
 output format:
-   2  bytes - the length of the RSA encrypted message key
+   2 bytes - the length of the RSA encrypted message key in network
+             byte order
    n  bytes - the RSA encrypted message key
    m  bytes - the encrypted message (usually as big as your RSA key)
    16 bytes - the "MAC"
@@ -37,10 +63,15 @@ message overhead is 530 bytes with a 4096 RSA key.
 Install
 depends: openssl seccomp
 
-If you don't want to support encrypted private keys, set
-WITHOUT_PASSWORDS in the top of the Makefile.
-
 `make install`
+
+If you don't want to support encrypted private keys, set
+
+`make install WITHOUT_PASSWORDS=y`
+
+if you do not have/want seccomp-based sandboxing:
+
+`make install WITHOUT_SECCOMP=y`
 
 create keys using openssl:
 # openssl genrsa -out my.key 4096
@@ -66,7 +97,44 @@ or test with:
 if the secret key is encrypted, then supply the password as value in
 the COD_PASSWORD environment variable to the decrypt operation:
 
-# ./cod e mx.pub <cod.c | COD_PASSWORD="mysecretpassword" ./cod d mx.key  | md5sum; md5sum cod.c
+# ./cod e mx.pub <cod.c | \
+#     COD_PASSWORD="mysecretpassword" ./cod d mx.key | \
+#     md5sum; md5sum cod.c
 
 if you supply a password, you should make sure that 1/ you have no
 shell history or 2/ you have it well protected.
+
+-------------------------------------------------------------------------
+
+sphincs - post-quantum signature pipe
+
+useful in any crypto graphic siging-scenario where 41kB signatures are
+acceptable.
+
+Example: the source code of cr3 is signed with sphincs.
+
+Crypto: the incoming message is hashed with blake512 and this hash sum
+is signed with sphincs256.
+
+Output format: the pipe copies the incoming stream verbatim to
+standard output with the sphincs256 signature appended. The signature
+size is currently: 41000 bytes.
+
+Install
+depends: seccomp
+
+`make install`
+
+if you do not have/want seccomp-based sandboxing:
+
+`make install WITHOUT_SECCOMP=y`
+
+create keys:
+# ./sphincs g /tmp/mykey
+
+publish /tmp/mykey.pub among your verifiers, secure /tmp/mykey.key in
+a safe location for signing.
+
+test with: `make test` or something similar:
+
+# echo 'It works' | ./sphincs s /tmp/mykey.pub | ./sphincs v /tmp/mykey.key
