@@ -50,11 +50,7 @@ int main(const int argc, const char** argv) {
     fprintf(stderr, "%s too big - are you sure this is a rsa key?\n", argv[2]);
     exit(1);
   }
-  char *key;
-  if((key=malloc(st.st_size))==NULL) {
-    fprintf(stderr, "couldn't malloc %ld bytes for key.\n", st.st_size);
-    exit(1);
-  }
+  char key[st.st_size];
   if (mlock(key, st.st_size) < 0) {
     fprintf(stderr, "couldn't mlock %ld bytes for key.\n", st.st_size);
     exit(1);
