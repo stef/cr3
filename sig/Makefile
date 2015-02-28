@@ -1,9 +1,8 @@
 # uncomment if you do not need passwords in private keys
-# WITHOUT_PASSWORDS=-DNOPASSWORD
+# WITHOUT_SECCOMP=y
 
 INCLUDES = -I../crypto/blake -I../crypto/chacha12 -I../crypto/sphincs256 -I. -I..
 LDFLAGS = -Wl,--gc-sections -Wl,-z,relro,-PIE -fPIC
-LIBS = -lseccomp
 CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
 	--param=ssp-buffer-size=4 -Wformat -Werror=format-security \
 	$(INCLUDES)
@@ -15,11 +14,18 @@ _objs = ../crypto/sphincs256/consts.o ../crypto/sphincs256/hash.o \
 	../crypto/sphincs256/prg.o  ../crypto/sphincs256/sign.o \
 	../crypto/sphincs256/wots.o ../crypto/blake/blake256.o \
 	../crypto/blake/blake512.o ../crypto/chacha12/chacha.o \
-	../utils.o crypto.o sandbox.o
+	../utils.o crypto.o
 
 objs = $(_objs) randombytes.o
 
 test_objs = $(_objs) tests/notrandom.o
+
+ifeq ($(WITHOUT_SECCOMP), y)
+	CFLAGS := $(CFLAGS) -DNOSECCOMP
+else
+	LIBS := $(LIBS) -lseccomp
+	objs := $(objs) sandbox.o
+endif
 
 all : sphincs sphincs-test
 

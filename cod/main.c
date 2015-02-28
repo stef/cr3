@@ -7,8 +7,11 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include "utils.h"
-#include "sandbox.h"
 #include "crypto.h"
+
+#ifndef NOSECCOMP
+#include "sandbox.h"
+#endif // NOSECCOMP
 
 void usage(void) {
   fprintf(stderr,"cod usage:`\n");
@@ -35,9 +38,12 @@ int main(const int argc, const char** argv) {
 
   // drop privileges if we have any, deny any privilege escalation
   drop_privs();
+
+#ifndef NOSECCOMP
   // sandbox
   // most importantly this sandboxes the parsing of the RSA keys
   lock_seccomp();
+#endif // NOSECCOMP
 
   ERR_load_crypto_strings();
 

@@ -10,7 +10,10 @@
 
 #include "utils.h"
 #include "crypto.h"
+
+#ifndef NOSECCOMP
 #include "sandbox.h"
+#endif // NOSECCOMP
 
 void usage(void) {
   fprintf(stderr,"sig usage:`\n");
@@ -34,8 +37,10 @@ int main(const int argc, const char** argv) {
 
         // drop privileges if we have any, deny any privilege escalation
         drop_privs();
+#ifndef NOSECCOMP
         // sandbox
         seccomp_genkey(skfd, pkfd);
+#endif // NOSECCOMP
 
         // generate and save keys
         ret = sig_genkey(skfd, pkfd);
@@ -56,8 +61,10 @@ int main(const int argc, const char** argv) {
 
     // drop privileges if we have any, deny any privilege escalation
     drop_privs();
+#ifndef NOSECCOMP
     // sandbox
     lock_seccomp(keyfd);
+#endif // NOSECCOMP
 
     // load the key into memory
     struct stat st;
