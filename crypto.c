@@ -83,7 +83,7 @@ int cod_encrypt(void* pem) {
     printLastError("Public Encrypt failed ");
     RSA_free(rsa);
     BIO_free(keybio);
-    clear(mkey, KEYLEN);
+    zerobytes(mkey, KEYLEN);
     return 1;
   }
 
@@ -93,7 +93,7 @@ int cod_encrypt(void* pem) {
 
   // seed sponge with the message key, and discard also mkey
   loadkey(&ctx, mkey);
-  clear(mkey, KEYLEN);
+  zerobytes(mkey, KEYLEN);
 
   short tmp = htons(cmkey_len);
   // write out message key
@@ -189,7 +189,7 @@ int cod_decrypt(void* pem, u8* password) {
   }
 
   if(RSA_private_decrypt(cmkey_len,cmkey,mkey,rsa,RSA_PKCS1_OAEP_PADDING) == -1) {
-    clear(mkey, KEYLEN);
+    zerobytes(mkey, KEYLEN);
   }
 
   // forget RSA key
@@ -198,7 +198,7 @@ int cod_decrypt(void* pem, u8* password) {
 
   // seed sponge with message key, and discard immediately mkey
   loadkey(&ctx, mkey);
-  clear(mkey, KEYLEN);
+  zerobytes(mkey, KEYLEN);
 
   // decrypt incoming stdin to stdout while always retaining the last
   // 16 bytes to be able to use them to verify the message tag

@@ -76,14 +76,14 @@ int main(const int argc, const char** argv) {
       pw_len = strlen(password);
       if (mlock(password, pw_len) < 0) {
         fprintf(stderr,"error locking password into memory: %s", strerror(errno));
-        clear((u8*) password, pw_len);
+        zerobytes((u8*) password, pw_len);
         exit(1);
       }
       OpenSSL_add_all_algorithms();
     }
 
     ret = cod_decrypt(key, (u8*) password);
-    if(password) clear((u8*) password, pw_len);
+    if(password) zerobytes((u8*) password, pw_len);
 #else // !defined(NOPASSWORD)
     ret = cod_decrypt(key, NULL);
 #endif
@@ -92,7 +92,7 @@ int main(const int argc, const char** argv) {
   }
 
   // clear rsa key from mem
-  clear(key, st.st_size);
+  zerobytes(key, st.st_size);
 
   return ret;
 }

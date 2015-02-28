@@ -10,7 +10,7 @@
 #define USERID 65534
 #define GROUPID 65534
 
-void* clear(void *v,size_t n) {
+void* zerobytes(void *v,size_t n) {
   volatile char *p=v; while (n--) *p++=0; return v;
 }
 
