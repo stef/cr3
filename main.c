@@ -92,7 +92,7 @@ int main(const int argc, const char** argv) {
   }
 
   // clear rsa key from mem
-  zerobytes(key, st.st_size);
+  zerobytes((u8*) key, st.st_size);
 
   return ret;
 }

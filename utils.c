@@ -10,8 +10,8 @@
 #define USERID 65534
 #define GROUPID 65534
 
-void* zerobytes(void *v,size_t n) {
-  volatile char *p=v; while (n--) *p++=0; return v;
+void* zerobytes(u8 *v,size_t n) {
+  volatile u8 *p=v; while (n--) *p++=0; return v;
 }
 
 int cmp(const void * a, const void *b, const size_t size) {
