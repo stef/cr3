@@ -18,7 +18,7 @@ cod : main.c $(objs)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o cod main.c $(objs) $(LIBS)
 
 clean:
-	rm -rf cod *.o
+	rm -rf cod $(objs)
 
 install: cod
 	strip -s cod
