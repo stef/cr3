@@ -1,6 +1,7 @@
 # uncomment if you do not need passwords in private keys
 # WITHOUT_PASSWORDS=-DNOPASSWORD
 
+INCLUDES = -Icrypto/keccak
 LDFLAGS = -Wl,--gc-sections -Wl,-z,relro,-PIE -fPIC
 LIBS = -lseccomp -lssl -lcrypto
 CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
@@ -9,7 +10,7 @@ CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
 # for debugging
 #CFLAGS = -g -Wall -march=native -Werror -fPIC -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security  $(INCLUDES)
 
-objs = utils.o keccak.o crypto.o sandbox.o
+objs = utils.o crypto/keccak/keccak.o crypto.o sandbox.o
 
 all : cod
 
