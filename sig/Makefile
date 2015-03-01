@@ -1,7 +1,7 @@
 # uncomment if you do not need passwords in private keys
 # WITHOUT_SECCOMP=y
 
-INCLUDES = -I../crypto/blake -I../crypto/chacha12 -I../crypto/sphincs256 -I. -I..
+INCLUDES = -I../crypto/keccak -I../crypto/blake -I../crypto/chacha12 -I../crypto/sphincs256 -I. -I..
 LDFLAGS = -Wl,--gc-sections -Wl,-z,relro,-PIE -fPIC
 CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
 	--param=ssp-buffer-size=4 -Wformat -Werror=format-security \
@@ -9,12 +9,12 @@ CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
 # for debugging
 #CFLAGS = -g -Wall -march=native -Werror -fPIC -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security  $(INCLUDES)
 
-_objs = ../crypto/sphincs256/consts.o ../crypto/sphincs256/hash.o \
-	../crypto/sphincs256/horst.o ../crypto/sphincs256/permute.o \
-	../crypto/sphincs256/prg.o  ../crypto/sphincs256/sign.o \
-	../crypto/sphincs256/wots.o ../crypto/blake/blake256.o \
-	../crypto/blake/blake512.o ../crypto/chacha12/chacha.o \
-	../utils.o crypto.o
+_objs = ../utils.o crypto.o ../crypto/sphincs256/consts.o		\
+	../crypto/sphincs256/hash.o ../crypto/sphincs256/horst.o		\
+	../crypto/sphincs256/permute.o ../crypto/sphincs256/prg.o	\
+	../crypto/sphincs256/sign.o ../crypto/sphincs256/wots.o		\
+	../crypto/keccak/keccak.o ../crypto/chacha12/chacha.o			\
+	../crypto/blake/blake256.o ../crypto/blake/blake512.o
 
 objs = $(_objs) randombytes.o
 
