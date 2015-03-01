@@ -1456,7 +1456,7 @@ void keccak_forget(struct KeccakContext *ctx)
 	ctx->pos = 0;
 }
 
-void sha3_512_digest(struct KeccakContext *ctx, uint8_t *dst, size_t len)
+void keccak_512_digest(struct KeccakContext *ctx, uint8_t *dst, size_t len)
 {
   const unsigned char pad=6;
   keccak_pad(ctx, &pad, 1);

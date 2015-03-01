@@ -88,12 +88,12 @@ int sig_sign(void* sk) {
   }
 
   // calculate sig and output
-  u8 hash[SHA3_512_BYTES];
-  u8 sm[CRYPTO_BYTES+SHA3_512_BYTES];
+  u8 hash[KECCAK_512_BYTES];
+  u8 sm[CRYPTO_BYTES+KECCAK_512_BYTES];
   unsigned long long smlen;
-  sha3_512_digest( &ctx, hash, SHA3_512_BYTES);
+  keccak_512_digest( &ctx, hash, KECCAK_512_BYTES);
 
-  if(crypto_sign(sm, &smlen, hash, SHA3_512_BYTES, sk) == -1) {
+  if(crypto_sign(sm, &smlen, hash, KECCAK_512_BYTES, sk) == -1) {
     fprintf(stderr, "signing failed\n");
     return 1;
   }
@@ -130,9 +130,9 @@ int sig_verify(void* pk) {
   }
   fflush(stdout);
 
-  sha3_512_digest( &ctx, hash, SHA3_512_BYTES);
+  keccak_512_digest( &ctx, hash, KECCAK_512_BYTES);
 
-  if(crypto_sign_open(buf, CRYPTO_BYTES+SHA3_512_BYTES, pk) == -1) {
+  if(crypto_sign_open(buf, CRYPTO_BYTES+KECCAK_512_BYTES, pk) == -1) {
     fprintf(stderr, "\nverification failed\n");
     return 1;
   }
