@@ -89,4 +89,7 @@ void keccak_rewind(struct KeccakContext *ctx);
 void keccak_forget(struct KeccakContext *ctx);
 
 void sha3_512_digest(struct KeccakContext *ctx, uint8_t *dst, size_t len);
+
+#define SHA3_512_BYTES 64
+
 #endif
