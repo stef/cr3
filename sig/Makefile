@@ -44,7 +44,12 @@ test: sphincs-test sphincs
 	@mkdir -p $(tmpdir)
 	./sphincs g $(tmpdir)/asdf
 	echo "hello world" | ./sphincs s $(tmpdir)/asdf.key | ./sphincs v $(tmpdir)/asdf.pub
+	for i in {24500..24600} {48085..48090} 10000000; do \
+		echo -ne "$$i        \r"; \
+		dd if=/dev/zero bs=$i count=1 2>/dev/null | \
+			./sphincs s $(tmpdir)/asdf.key | \
+			./sphincs v $(tmpdir)/asdf.pub || { echo "test failed $i";  break; } ; \
+	done
 	@rm -rf $(tmpdir)
-	./sphincs v /tmp/asdf.pub </tmp/b || exit 0
 
 .PHONY: clean all test
