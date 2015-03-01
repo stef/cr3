@@ -15,6 +15,8 @@
 
 #define BUFSIZE (1<<16)
 
+// for sandboxing overkill, we open the files, then process later in
+// the sandbox
 FILE* keyopen(char* prefix, char* postfix) {
   size_t fnlen = strlen(prefix)+strlen(postfix)+1;
   char name[fnlen];
@@ -38,6 +40,7 @@ int sig_keyfds(char* name, FILE** key, FILE** pub) {
 
 int sig_genkey(FILE* keyfp, FILE* pubfp) {
   u8 pk[CRYPTO_PUBLICKEYBYTES], sk[CRYPTO_SECRETKEYBYTES];
+  // mlock key material
   if (mlock(pk, CRYPTO_PUBLICKEYBYTES) < 0) {
     fprintf(stderr, "couldn't mlock %d bytes for pubkey.\n", CRYPTO_PUBLICKEYBYTES);
     return -1;
@@ -47,10 +50,12 @@ int sig_genkey(FILE* keyfp, FILE* pubfp) {
     return -1;
   }
 
+  // generate sphincs256 keypair
   if(crypto_sign_keypair(pk,sk)!=0) {
     return -1;
   }
 
+  // write key to files
   if(fwrite(pk,CRYPTO_PUBLICKEYBYTES,1,pubfp) != 1) {
     fprintf(stderr, "failed to write pubkey: %s\n", strerror(errno));
     return 1;
