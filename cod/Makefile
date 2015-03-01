@@ -3,7 +3,7 @@
 # uncomment if you do not want/have seccomp
 # WITHOUT_SECCOMP=y
 
-INCLUDES = -I../crypto/keccak -I..
+INCLUDES = -I../crypto/keccak -I.. -I../common
 LDFLAGS = -Wl,--gc-sections -Wl,-z,relro,-PIE -fPIC
 LIBS = -lssl -lcrypto
 CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
@@ -12,7 +12,7 @@ CFLAGS = -O3 -Wall -march=native -Werror -fPIC -fstack-protector \
 # for debugging
 #CFLAGS = -g -Wall -march=native -Werror -fPIC -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security  $(INCLUDES)
 
-objs = ../utils.o ../crypto/keccak/keccak.o crypto.o
+objs = ../common/utils.o ../crypto/keccak/keccak.o crypto.o
 
 ifeq ($(WITHOUT_PASSWORDS), y)
  CFLAGS := $(CFLAGS) -DNOPASSWORD
