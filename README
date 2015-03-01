@@ -112,8 +112,23 @@ useful in any crypto graphic siging-scenario where 41kB signatures are
 acceptable.
 
 Example: the source code of cr3 is signed with sphincs.
+you can verify it by running:
 
-Crypto: the incoming message is hashed with blake512 and this hash sum
+# cat cr3-${cr3version}.txz cr3-${cr3version}.txz.sig | sphincs v c3maint.pub >/dev/null
+
+you can find the c3maint.pub key in this source archive, and you can
+get the signature for commit 2886bd:
+   http://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz
+from:
+   https://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz.sig
+
+try it like this:
+
+# { curl -qs 'http://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz'
+#   curl -qs 'https://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz.sig' } |
+#   ./sphincs v ./c3maint.pub >/dev/null
+
+Crypto: the incoming message is hashed with keccak512 and this hash sum
 is signed with sphincs256.
 
 Output format: the pipe copies the incoming stream verbatim to
