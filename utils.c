@@ -36,10 +36,12 @@ int _write(const u8* src, const size_t len) {
 }
 
 void drop_privs(void) {
+#ifndef NOSECCOMP
   // do not gain new privs
   prctl(PR_SET_NO_NEW_PRIVS, 1);
   // disable ptrace
   prctl(PR_SET_DUMPABLE, 0);
+#endif
 
   if(geteuid()==0) {
     // process is running as root, drop privileges
