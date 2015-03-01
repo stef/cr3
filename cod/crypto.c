@@ -142,7 +142,7 @@ int cod_decrypt(void* pem, u8* password) {
   unsigned char cmkey[4098];
   int cmkey_len = 0;
   struct KeccakContext ctx;
-  int max, i, avail, ret;
+  int max, i, avail;
   unsigned char buf[BUFSIZE], dst[BUFSIZE];
   size_t size;
   unsigned char tag[TAGLEN];
@@ -205,26 +205,27 @@ int cod_decrypt(void* pem, u8* password) {
   max = ctx.rbytes - 1;
   keccak_pad(&ctx, &_PAD_KEYSTREAM, 1);
   size=fread(buf, 1, BUFSIZE, stdin);
-  while(size > TAGLEN) {
-    for(i=0;i<size-TAGLEN;i+=((size-TAGLEN)-i>avail)?avail:((size-TAGLEN)-i)) {
+  if(size < TAGLEN) {
+    fprintf(stderr, "\ntruncated payload\n");
+    return 1;
+  }
+  size-=TAGLEN;
+  while(size > 0) {
+    for(i=0;i<size;i+=(size-i>avail)?avail:(size-i)) {
       avail = max - ctx.pos;
       if(avail==0) {
         keccak_pad(&ctx, &_PAD_KEYSTREAM, 1);
         continue;
       }
-      keccak_decrypt(&ctx, dst+i, buf+i, ((size-TAGLEN)-i>avail)?avail:(size-TAGLEN)-i);
+      keccak_decrypt(&ctx, dst+i, buf+i, (size-i>avail)?avail:(size-i));
     }
-    if(!_write(dst, size-TAGLEN)) {
+    if(!_write(dst, size)) {
       keccak_forget(&ctx);
       return 1;
     }
     // move last 16 to the beginning of buf
-    memcpy(buf, buf+(size-TAGLEN), TAGLEN);
-    if((ret = fread(buf+TAGLEN, 1, BUFSIZE-TAGLEN, stdin))>0) {
-      size=TAGLEN+ret;
-    } else {
-      size=TAGLEN;
-    }
+    memmove(buf, buf+size, TAGLEN);
+    size = fread(buf+TAGLEN, 1, BUFSIZE-TAGLEN, stdin);
   }
   // calculate tag
   keccak_pad(&ctx, &_PAD_PLAINSTREAM, 1);
