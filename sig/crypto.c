@@ -132,10 +132,7 @@ int sig_verify(void* pk) {
 
   sha3_512_digest( &ctx, hash, SHA3_512_BYTES);
 
-  u8 msg[SHA3_512_BYTES];
-  unsigned long long msglen;
-
-  if(crypto_sign_open(msg, &msglen, buf, CRYPTO_BYTES+SHA3_512_BYTES, pk) == -1) {
+  if(crypto_sign_open(buf, CRYPTO_BYTES+SHA3_512_BYTES, pk) == -1) {
     fprintf(stderr, "\nverification failed\n");
     return 1;
   }

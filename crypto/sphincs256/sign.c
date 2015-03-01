@@ -352,7 +352,7 @@ int crypto_sign(unsigned char *sm,unsigned long long *smlen, const unsigned char
 
 
 
-int crypto_sign_open(unsigned char *m,unsigned long long *mlen, const unsigned char *sm,unsigned long long smlen, const unsigned char *pk)
+int crypto_sign_open(unsigned char *sm,unsigned long long smlen, const unsigned char *pk)
 {
   unsigned long long i;
   unsigned long long leafidx=0;
@@ -380,7 +380,7 @@ int crypto_sign_open(unsigned char *m,unsigned long long *mlen, const unsigned c
 
     int len = smlen - CRYPTO_BYTES;
 
-    unsigned char *scratch = m;
+    unsigned char *scratch = sm;
 
     memcpy(sig, sm, CRYPTO_BYTES);
 
@@ -432,17 +432,9 @@ int crypto_sign_open(unsigned char *m,unsigned long long *mlen, const unsigned c
     if(root[i] != tpk[i+N_MASKS*HASH_BYTES])
       goto fail;
 
-  *mlen = smlen;
-  for(i=0;i<*mlen;i++)
-    m[i] = m[i+MESSAGE_HASH_SEED_BYTES+CRYPTO_PUBLICKEYBYTES];
-
   return 0;
 
 
 fail:
-  *mlen = smlen;
-  for(i=0;i<*mlen;i++)
-    m[i] = 0;
-  *mlen = -1;
   return -1;
 }
