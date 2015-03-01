@@ -7,7 +7,7 @@ typedef unsigned char u8;
 typedef unsigned int u32;
 typedef unsigned long long u64;
 
-typedef struct  { 
+typedef struct  {
   u64 h[8], s[4], t[2];
   int buflen, nullt;
   u8 buf[128];
