@@ -42,7 +42,8 @@ int main(const int argc, const char** argv) {
 #ifndef NOSECCOMP
   // sandbox
   // most importantly this sandboxes the parsing of the RSA keys
-  lock_seccomp();
+  // find out next possible fd
+  lock_seccomp(keyfd);
 #endif // NOSECCOMP
 
   ERR_load_crypto_strings();
