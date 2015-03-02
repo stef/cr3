@@ -125,7 +125,7 @@ get the signature for v0.3 from:
 
 try it like this:
 
-  { curl -qs 'https://github.com/stef/cr3/archive/v0.3.tar.gz' |
+  { curl -Lqs 'https://github.com/stef/cr3/archive/v0.3.tar.gz' |
         tee cr3-0.3.tar.gz # save a copy of the archive
     curl -qs 'https://www.ctrlc.hu/~stef/cr3-0.3.tar.gz.sig' } |
     ./sphincs v ./c3maint.pub >/dev/null ||
