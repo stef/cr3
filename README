@@ -10,17 +10,17 @@ implements two simple pipes using:
 why crazy-crappy-crypto? it's crazy because it uses unsanctioned,
 experimental and unconventional crypto implementations, some of which
 are so fresh, that it's not even a month that the paper has last been
-edited on which this is based. None of these tools should not find
-wide adoption within at least the next 10 years. The selection of the
-algorithms is conservative in the way, that besides fresh algos the
-rest is selected either on maturity or has at least been considered in
-a crypto contest in the final round. Crappy is the way some of this is
-implemented, the crypto algorithms are simply ripped out from other
-projects, like the supercop benchmarking suite. Although some have
-been verified to provide the expected test vectors, otherwise not much
-effort has been done to verify the resistance against various attacks
-on any of these implementations. so anyone to use this crap must be
-crazy, hence the name.
+edited on which some of this is based. None of these tools should not
+find wide adoption within at least the next 5-10 years. The selection
+of the algorithms is conservative in the way, that besides fresh algos
+the rest is selected either on maturity or has at least been
+considered in a crypto contest in the final round. Crappy is the way
+some of this is implemented, the crypto algorithms are simply ripped
+out from other projects, like the supercop benchmarking
+suite. Although some have been verified to provide the expected test
+vectors, otherwise not much effort has been done to verify the
+resistance against various attacks on any of these implementations. so
+anyone to use this crap must be crazy, hence the name.
 
 WARNING - these tools should only be used by people who want to break
 these tools and publish their results. Any damages, liabilites, etc
@@ -108,6 +108,9 @@ shell history or 2/ you have it well protected.
 
 sphincs - post-quantum signature pipe
 
+WARNING: this is very experimental and unsanctioned stuff, don't use
+it for anything non-nefarious.
+
 useful in any crypto graphic siging-scenario where 41kB signatures are
 acceptable.
 
@@ -117,16 +120,16 @@ you can verify it by running:
 # cat cr3-${cr3version}.txz cr3-${cr3version}.txz.sig | sphincs v c3maint.pub >/dev/null
 
 you can find the c3maint.pub key in this source archive, and you can
-get the signature for commit 2886bd:
-   http://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz
-from:
-   https://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz.sig
+get the signature for v0.3 from:
+   https://www.ctrlc.hu/~stef/cr3-0.3.tar.gz.sig
 
 try it like this:
 
-# { curl -qs 'http://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz'
-#   curl -qs 'https://www.ctrlc.hu/~stef/2886bd82203568dbe1c18f84b2b0953db7031a88.tar.gz.sig' } |
-#   ./sphincs v ./c3maint.pub >/dev/null
+  { curl -qs 'https://github.com/stef/cr3/archive/v0.3.tar.gz' |
+        tee cr3-0.3.tar.gz # save a copy of the archive
+    curl -qs 'https://www.ctrlc.hu/~stef/cr3-0.3.tar.gz.sig' } |
+    ./sphincs v ./c3maint.pub >/dev/null ||
+        rm cr3-0.3.tar.gz # remove archive if signature fails
 
 Crypto: the incoming message is hashed with keccak512 and this hash sum
 is signed with sphincs256.
@@ -153,3 +156,22 @@ a safe location for signing.
 test with: `make test` or something similar:
 
 # echo 'It works' | ./sphincs s /tmp/mykey.pub | ./sphincs v /tmp/mykey.key
+
+---------------------------------------------------------------------------
+
+Sandboxing
+
+These tools all come with seccomp-based sandboxes, although they have
+not been exposed to many systems, so it might happen that the sandbox
+kills your process. In this case recompile the tools using
+
+    make WITHOUT_SECCOMP=y
+
+run them with uninteresting data through:
+
+    strace -fo /tmp/misbehavingsandbox
+
+and 1/ fix it yourself and send a patch, or 2/ send me the file
+/tmp/misbehavingsandbox. Thanks in any case, and sorry for the
+inconvenience. In the mean time you can use the tools without
+sandboxing.
