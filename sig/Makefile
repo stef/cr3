@@ -27,29 +27,18 @@ else
 	objs := $(objs) sandbox.o
 endif
 
-all : sphincs sphincs-test
+all : sphincs tests/sphincs-test
 
 sphincs : main.c $(objs)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o sphincs main.c $(objs) $(LIBS)
 
-sphincs-test : tests/test.c $(test_objs)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o sphincs-test tests/test.c $(test_objs) $(LIBS)
+tests/sphincs-test : tests/test.c $(test_objs)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o tests/sphincs-test tests/test.c $(test_objs) $(LIBS)
 
 clean:
-	rm -rf sphincs sphincs-test *.o $(objs) tests/notrandom.o
+	rm -rf sphincs tests/sphincs-test *.o $(objs) tests/notrandom.o
 
-test: sphincs-test sphincs
-	./sphincs-test
-	@$(eval tmpdir:=$(shell mktemp -d))
-	@mkdir -p $(tmpdir)
-	./sphincs g $(tmpdir)/asdf
-	echo "hello world" | ./sphincs s $(tmpdir)/asdf.key | ./sphincs v $(tmpdir)/asdf.pub
-	for i in {24500..24600} {48085..48090} 10000000; do \
-		echo -ne "$$i        \r"; \
-		dd if=/dev/zero bs=$i count=1 2>/dev/null | \
-			./sphincs s $(tmpdir)/asdf.key | \
-			./sphincs v $(tmpdir)/asdf.pub || { echo "test failed $i";  break; } ; \
-	done
-	@rm -rf $(tmpdir)
+test: tests/sphincs-test sphincs
+	./tests/test.sh
 
 .PHONY: clean all test
