@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # should be called from parent dir
 
 tmpdir=$(mktemp -d)

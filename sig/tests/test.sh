@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # this file should be run from the parent dir
 
 echo "checking test vector"
