@@ -76,11 +76,10 @@ void seccomp_genkey(FILE* sk, FILE* pk) {
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat), 1, SCMP_A0(SCMP_CMP_EQ, fileno(pk)));
   seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(fstat), 1, SCMP_A0(SCMP_CMP_EQ, fileno(sk)));
   /* mmap2(NULL, *, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) */
-  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mmap), 5,
+  seccomp_rule_add(ctx, SCMP_ACT_ALLOW, SCMP_SYS(mmap), 4,
                    SCMP_A0(SCMP_CMP_EQ, NULL),
                    SCMP_A2(SCMP_CMP_EQ, PROT_READ|PROT_WRITE),
                    SCMP_A3(SCMP_CMP_EQ, MAP_PRIVATE|MAP_ANONYMOUS),
-                   SCMP_A4(SCMP_CMP_EQ, -1),
                    SCMP_A5(SCMP_CMP_EQ, 0)
                    );
 #else // assume 32bit
