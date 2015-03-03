@@ -2,7 +2,7 @@ cr^3 - crazy-crappy-crypto
 
 implements two simple pipes using:
  - rsa and keccak-based spongewrap authenticated encryption
- - highly experimental post-quantum signatures based on blake512 and
+ - highly experimental post-quantum signatures based on keccak and
    sphincs256
 
 (C) 2015 by stf, <s@ctrlc.hu>, GPLv3
