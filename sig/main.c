@@ -17,9 +17,9 @@
 
 void usage(void) {
   fprintf(stderr,"sig usage:`\n");
-  fprintf(stderr,"`./sig g <key name>`        key generation into <key name>.(key|pub)\n");
-  fprintf(stderr,"`... | ./sig s privkey.pem | ...`    signing\n\n");
-  fprintf(stderr,"`... | ./sig v pub.pem | ...`        verification\n");
+  fprintf(stderr,"`sig g <key name>`        key generation into <key name>.(key|pub)\n");
+  fprintf(stderr,"`... | sig s privkey.pem | ...`    signing\n\n");
+  fprintf(stderr,"`... | sig v pub.pem | ...`        verification\n");
 }
 
 int main(const int argc, const char** argv) {
@@ -29,6 +29,7 @@ int main(const int argc, const char** argv) {
     exit(1);
   }
 
+  // handle key generation
   if(argv[1][0]=='g') {
     FILE* skfd = NULL, *pkfd = NULL;
     if(argc == 3 && argv[1][0]=='g') {
@@ -52,6 +53,7 @@ int main(const int argc, const char** argv) {
     }
 
   } else if(argv[1][0]=='s' || argv[1][0]=='v') {
+    // handle sign/verify operation
     // open key file, leave the reading/parsing after the sandboxing
     int keyfd;
     if((keyfd=open(argv[2],O_RDONLY))==-1) {
@@ -91,15 +93,13 @@ int main(const int argc, const char** argv) {
     // decide what to do and act on it
     if(argv[1][0]=='v') {
       ret = sig_verify(key);
-      // clear key from mem
     } else {
       ret = sig_sign(key);
-      // clear key from mem
     }
+    // clear key from mem
     zerobytes((u8*) key, st.st_size);
   } else {
     usage();
-    ret=1;
   }
 
   return ret;
