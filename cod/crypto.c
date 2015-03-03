@@ -20,9 +20,7 @@ char _PAD_KEYSTREAM   = 3;
 char _PAD_PLAINSTREAM = 2;
 
 static void printLastError(char *msg) {
-  char *err;
-  err = ERR_error_string(ERR_get_error(), NULL);
-  printf("%s ERROR: %s\n", msg, err);
+  printf("%s ERROR: %s\n", msg, ERR_error_string(ERR_get_error(), NULL));
 }
 
 static void loadkey(struct KeccakContext *ctx, unsigned char *mkey) {
