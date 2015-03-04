@@ -89,6 +89,10 @@ int cod_encrypt(void* pem) {
   RSA_free(rsa);
   BIO_free(keybio);
 
+  if (mlock(&ctx, sizeof(ctx)) < 0) {
+    fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
+    return 1;
+  }
   // seed sponge with the message key, and discard also mkey
   loadkey(&ctx, mkey);
   zerobytes(mkey, KEYLEN);
@@ -97,11 +101,6 @@ int cod_encrypt(void* pem) {
   // write out message key
   if(!_write((u8*) &tmp, 2)) return 1;
   if(!_write(cmkey, cmkey_len)) return 1;
-
-  if (mlock(&ctx, sizeof(ctx)) < 0) {
-    fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
-    return 1;
-  }
 
   // buffered encrypt and output
   max = ctx.rbytes - 1;
