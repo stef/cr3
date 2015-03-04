@@ -124,11 +124,10 @@ int cod_encrypt(void* pem) {
   // calculate tag and output
   keccak_pad(&ctx, &_PAD_PLAINSTREAM, 1);
   keccak_squeeze(&ctx, tag, TAGLEN);
+  keccak_forget(&ctx);
   if(!_write(tag, TAGLEN)) {
-      keccak_forget(&ctx);
       return 1;
   }
-  keccak_forget(&ctx);
   return 0;
 }
 
