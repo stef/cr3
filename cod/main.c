@@ -90,7 +90,6 @@ int main(const int argc, const char** argv) {
     }
 
     ret = cod_decrypt(key, (u8*) password);
-    if(password) zerobytes((u8*) password, pw_len);
 #else // !defined(NOPASSWORD)
     ret = cod_decrypt(key, NULL);
 #endif

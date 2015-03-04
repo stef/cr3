@@ -147,18 +147,22 @@ int cod_decrypt(void* pem, u8* password) {
   keybio = BIO_new_mem_buf(pem, -1);
   if (keybio==NULL) {
     printLastError("Failed to create key bio ");
+    if(password) zerobytes((u8*) password, pw_len);
     return 1;
   }
   rsa = PEM_read_bio_RSAPrivateKey(keybio, &rsa,NULL, password);
   if(rsa == NULL) {
     printLastError("Failed to load RSA private key ");
+    if(password) zerobytes((u8*) password, pw_len);
     BIO_free(keybio);
     return 1;
   }
+  if(password) zerobytes(password, strlen(password));
 
   // load encrypted message key from stdin and decrypt
   if(fread((u8*) &cmkey_len, 2, 1, stdin)!=1) {
     fprintf(stderr, "corrupt input: %d\n", cmkey_len);
+    if(password) zerobytes((u8*) password, pw_len);
     RSA_free(rsa);
     BIO_free(keybio);
     return 1;
@@ -167,6 +171,7 @@ int cod_decrypt(void* pem, u8* password) {
   if(cmkey_len > 1024 ||
      fread(cmkey, cmkey_len, 1, stdin)!=1) {
     fprintf(stderr, "corrupt input\n");
+    if(password) zerobytes((u8*) password, pw_len);
     RSA_free(rsa);
     BIO_free(keybio);
     return 1;
@@ -174,6 +179,7 @@ int cod_decrypt(void* pem, u8* password) {
 
   if (mlock(mkey, KEYLEN) < 0) {
     fprintf(stderr,"error locking mkey into memory: %s", strerror(errno));
+    if(password) zerobytes((u8*) password, pw_len);
     RSA_free(rsa);
     BIO_free(keybio);
     return 1;
@@ -181,6 +187,9 @@ int cod_decrypt(void* pem, u8* password) {
 
   if (mlock(&ctx, sizeof(ctx)) < 0) {
     fprintf(stderr,"error locking ctx into memory: %s", strerror(errno));
+    if(password) zerobytes((u8*) password, pw_len);
+    RSA_free(rsa);
+    BIO_free(keybio);
     return 1;
   }
 
@@ -188,9 +197,10 @@ int cod_decrypt(void* pem, u8* password) {
     zerobytes(mkey, KEYLEN);
   }
 
-  // forget RSA key
+  // forget RSA key and password
   RSA_free(rsa);
   BIO_free(keybio);
+  if(password) zerobytes((u8*) password, pw_len);
 
   // seed sponge with message key, and discard immediately mkey
   loadkey(&ctx, mkey);
