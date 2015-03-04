@@ -120,16 +120,16 @@ you can verify it by running:
 # cat cr3-${cr3version}.txz cr3-${cr3version}.txz.sig | sphincs v c3maint.pub >/dev/null
 
 you can find the c3maint.pub key in this source archive, and you can
-get the signature for v0.3 from:
-   https://www.ctrlc.hu/~stef/cr3-0.3.tar.gz.sig
+get the signature for v0.3.1 from:
+   https://www.ctrlc.hu/~stef/cr3-0.3.1.tar.gz.sig
 
 try it like this:
 
-  { curl -Lqs 'https://github.com/stef/cr3/archive/v0.3.tar.gz' |
-        tee cr3-0.3.tar.gz # save a copy of the archive
-    curl -qs 'https://www.ctrlc.hu/~stef/cr3-0.3.tar.gz.sig' } |
+  { curl -Lqs 'https://github.com/stef/cr3/archive/v0.3.1.tar.gz' |
+        tee cr3-0.3.1.tar.gz # save a copy of the archive
+    curl -qs 'https://www.ctrlc.hu/~stef/cr3-0.3.1.tar.gz.sig' } |
     ./sphincs v ./c3maint.pub >/dev/null ||
-        rm cr3-0.3.tar.gz # remove archive if signature fails
+        rm cr3-0.3.1.tar.gz # remove archive if signature fails
 
 Crypto: the incoming message is hashed with keccak512 and this hash sum
 is signed with sphincs256.

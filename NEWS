@@ -1,3 +1,4 @@
+v0.3.1 - some clean ups
 v0.3   - sphincs256 based experimental signer, lot's of cleanups
 v0.2   - support for password protected rsa key
 v0.1.1 - cleanups
