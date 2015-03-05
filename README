@@ -74,32 +74,32 @@ if you do not have/want seccomp-based sandboxing:
 `make install WITHOUT_SECCOMP=y`
 
 create keys using openssl:
-# openssl genrsa -out my.key 4096
-# openssl rsa -in my.key -pubout >> my.pub
+$ openssl genrsa -out my.key 4096
+$ openssl rsa -in my.key -pubout >> my.pub
 
 deploy my.pub on the encrypting host, secure my.key in a safe
 location for decryption.
 
 test with: `make test` or something similar:
 
-# for i in {0..42} {8170..8210} 1000000; do
-#     echo -ne "\r$i   "
-#     dd if=/dev/zero bs=$i count=1 2>/dev/null |
-#          ./cod e my.pub |
-#          ./cod d my.key >/dev/null ||
-#          break
-# done
+$ for i in {0..42} {8170..8210} 1000000; do
+      echo -ne "\r$i   "
+      dd if=/dev/zero bs=$i count=1 2>/dev/null |
+           ./cod e my.pub |
+           ./cod d my.key >/dev/null ||
+           break
+  done
 
 or test with:
 
-# ./cod e mx.pub <cod.c | ./cod d mx.key | md5sum; md5sum cod.c
+$ ./cod e mx.pub <cod.c | ./cod d mx.key | md5sum; md5sum cod.c
 
 if the secret key is encrypted, then supply the password as value in
 the COD_PASSWORD environment variable to the decrypt operation:
 
-# ./cod e mx.pub <cod.c | \
-#     COD_PASSWORD="mysecretpassword" ./cod d mx.key | \
-#     md5sum; md5sum cod.c
+$ ./cod e mx.pub <cod.c | \
+      COD_PASSWORD="mysecretpassword" ./cod d mx.key | \
+      md5sum; md5sum cod.c
 
 if you supply a password, you should make sure that 1/ you have no
 shell history or 2/ you have it well protected.
@@ -117,7 +117,7 @@ acceptable.
 Example: the source code of cr3 is signed with sphincs.
 you can verify it by running:
 
-# cat cr3-${cr3version}.txz cr3-${cr3version}.txz.sig | sphincs v c3maint.pub >/dev/null
+$ cat cr3-${cr3version}.txz cr3-${cr3version}.txz.sig | sphincs v c3maint.pub >/dev/null
 
 you can find the c3maint.pub key in this source archive, and you can
 get the signature for v0.3.1 from:
@@ -125,7 +125,7 @@ get the signature for v0.3.1 from:
 
 try it like this:
 
-  { curl -Lqs 'https://github.com/stef/cr3/archive/v0.3.1.tar.gz' |
+$ { curl -Lqs 'https://github.com/stef/cr3/archive/v0.3.1.tar.gz' |
         tee cr3-0.3.1.tar.gz # save a copy of the archive
     curl -qs 'https://www.ctrlc.hu/~stef/cr3-0.3.1.tar.gz.sig' } |
     ./sphincs v ./c3maint.pub >/dev/null ||
@@ -148,14 +148,14 @@ if you do not have/want seccomp-based sandboxing:
 `make install WITHOUT_SECCOMP=y`
 
 create keys:
-# ./sphincs g /tmp/mykey
+$ ./sphincs g /tmp/mykey
 
 publish /tmp/mykey.pub among your verifiers, secure /tmp/mykey.key in
 a safe location for signing.
 
 test with: `make test` or something similar:
 
-# echo 'It works' | ./sphincs s /tmp/mykey.pub | ./sphincs v /tmp/mykey.key
+$ echo 'It works' | ./sphincs s /tmp/mykey.pub | ./sphincs v /tmp/mykey.key
 
 ---------------------------------------------------------------------------
 
@@ -165,13 +165,13 @@ These tools all come with seccomp-based sandboxes, although they have
 not been exposed to many systems, so it might happen that the sandbox
 kills your process. In this case recompile the tools using
 
-    make WITHOUT_SECCOMP=y
+    $ make WITHOUT_SECCOMP=y
 
 run them with uninteresting data through:
 
-    strace -fo /tmp/misbehavingsandbox
+    $ strace -fo /tmp/misbehavingsandbox <command....>
 
 and 1/ fix it yourself and send a patch, or 2/ send me the file
 /tmp/misbehavingsandbox. Thanks in any case, and sorry for the
 inconvenience. In the mean time you can use the tools without
-sandboxing.
+sandboxing by using `make WITHOUT_SECCOMP=y` to recompile.
